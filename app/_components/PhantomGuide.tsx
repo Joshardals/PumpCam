@@ -30,47 +30,21 @@ export function PhantomGuide({
       "https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa",
   };
 
-  // const handlePhantomClick = () => {
-  //   const baseUrl = "https://phantom.app/ul/browse";
-  //   const currentUrl = window.location.href;
-  //   const referralParam = referralCode ? `?ref=${referralCode}` : "";
-  //   const encodedUrl = encodeURIComponent(`${currentUrl}${referralParam}`);
-  //   const phantomUrl = `${baseUrl}/${encodedUrl}`;
-
-  //   if (isMobile) {
-  //     window.location.href = phantomUrl;
-  //     setTimeout(() => {
-  //       const storeLink = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-  //         ? phantomStoreLinks.ios
-  //         : phantomStoreLinks.android;
-  //       window.location.href = storeLink;
-  //     }, 1000);
-  //   } else {
-  //     window.open(phantomStoreLinks.chrome, "_blank");
-  //   }
-  // };
-
   const handlePhantomClick = () => {
     if (isMobile) {
       const currentUrl = window.location.href;
       const referralParam = referralCode ? `?ref=${referralCode}` : "";
       const fullUrl = `${currentUrl}${referralParam}`;
 
-      // Try both deep link and universal link
-      const phantomDeepLink = `phantom://browse/${encodeURIComponent(fullUrl)}`;
-      const phantomUniversalLink = `https://phantom.app/ul/browse/${encodeURIComponent(
+      // Construct the browse deeplink according to Phantom's documentation
+      const phantomBrowseLink = `https://phantom.app/ul/browse/${encodeURIComponent(
         fullUrl
-      )}`;
+      )}?ref=${encodeURIComponent(window.location.origin)}`;
 
-      // Try deep link first
-      window.location.href = phantomDeepLink;
+      // Try to open Phantom app with the browse deeplink
+      window.location.href = phantomBrowseLink;
 
-      // Try universal link after a short delay
-      setTimeout(() => {
-        window.location.href = phantomUniversalLink;
-      }, 500);
-
-      // Fallback to store after a longer delay
+      // Fallback to app stores after a delay if Phantom isn't installed
       setTimeout(() => {
         const storeLink = /iPhone|iPad|iPod/i.test(navigator.userAgent)
           ? phantomStoreLinks.ios
@@ -78,6 +52,7 @@ export function PhantomGuide({
         window.location.href = storeLink;
       }, 1500);
     } else {
+      // For desktop, open Chrome Web Store
       window.open(phantomStoreLinks.chrome, "_blank");
     }
   };
