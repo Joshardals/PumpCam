@@ -11,7 +11,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { Toast } from "./ui/Toast";
 import { useWalletStore } from "@/lib/store";
-import { useSearchParams } from "next/navigation";
+// import { useSearchParams } from "next/navigation";
 import {
   createOrUpdateUser,
   getReferrerAddress,
