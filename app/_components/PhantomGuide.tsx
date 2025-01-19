@@ -52,24 +52,31 @@ export function PhantomGuide({
 
   const handlePhantomClick = () => {
     if (isMobile) {
-      // Using Phantom's deep linking format for mobile
       const currentUrl = window.location.href;
       const referralParam = referralCode ? `?ref=${referralCode}` : "";
       const fullUrl = `${currentUrl}${referralParam}`;
 
-      // Phantom deep link format
-      const phantomUrl = `phantom://browse/${encodeURIComponent(fullUrl)}`;
+      // Try both deep link and universal link
+      const phantomDeepLink = `phantom://browse/${encodeURIComponent(fullUrl)}`;
+      const phantomUniversalLink = `https://phantom.app/ul/browse/${encodeURIComponent(
+        fullUrl
+      )}`;
 
-      // Try opening Phantom first
-      window.location.href = phantomUrl;
+      // Try deep link first
+      window.location.href = phantomDeepLink;
 
-      // Fallback to store after a delay if Phantom isn't installed
+      // Try universal link after a short delay
+      setTimeout(() => {
+        window.location.href = phantomUniversalLink;
+      }, 500);
+
+      // Fallback to store after a longer delay
       setTimeout(() => {
         const storeLink = /iPhone|iPad|iPod/i.test(navigator.userAgent)
           ? phantomStoreLinks.ios
           : phantomStoreLinks.android;
         window.location.href = storeLink;
-      }, 1000);
+      }, 1500);
     } else {
       window.open(phantomStoreLinks.chrome, "_blank");
     }
