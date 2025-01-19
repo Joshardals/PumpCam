@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   Connection,
   PublicKey,
@@ -11,7 +11,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { Toast } from "./ui/Toast";
 import { useWalletStore } from "@/lib/store";
-// import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   createOrUpdateUser,
   getReferrerAddress,
@@ -60,9 +60,9 @@ interface SolanaPrice {
   };
 }
 
-export default function PumpButton() {
+function PumpButtonInner() {
   const [showPhantomGuide, setShowPhantomGuide] = useState<boolean>(false);
-  // const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
   const [phantom, setPhantom] = useState<PhantomProvider | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
@@ -71,24 +71,56 @@ export default function PumpButton() {
 
   const { setWalletAddress } = useWalletStore();
 
-  useEffect(() => {
-    if (window?.phantom?.solana) {
-      const provider = window.phantom.solana;
-      setPhantom(provider);
+  // useEffect(() => {
+  //   if (window?.phantom?.solana) {
+  //     const provider = window.phantom.solana;
+  //     setPhantom(provider);
 
-      provider
-        .connect({ onlyIfTrusted: true })
-        .then(async ({ publicKey }: { publicKey: PublicKey }) => {
-          setPublicKey(publicKey);
-          setWalletAddress(publicKey.toString());
-          setConnected(true);
-        })
-        .catch(() => {
-          return;
-        });
-    } else {
-      setShowPhantomGuide(true);
-    }
+  //     provider
+  //       .connect({ onlyIfTrusted: true })
+  //       .then(async ({ publicKey }: { publicKey: PublicKey }) => {
+  //         setPublicKey(publicKey);
+  //         setWalletAddress(publicKey.toString());
+  //         setConnected(true);
+  //       })
+  //       .catch(() => {
+  //         return;
+  //       });
+  //   } else {
+  //     setShowPhantomGuide(true);
+  //   }
+  // }, [setWalletAddress]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkPhantomWallet = async () => {
+      // Only check for window.phantom when component is mounted
+      if (typeof window !== "undefined" && window?.phantom?.solana && mounted) {
+        const provider = window.phantom.solana;
+        setPhantom(provider);
+
+        try {
+          const { publicKey } = await provider.connect({ onlyIfTrusted: true });
+          if (mounted) {
+            setPublicKey(publicKey);
+            setWalletAddress(publicKey.toString());
+            setConnected(true);
+          }
+        } catch (error) {
+          // Handle silently as this is just an auto-connect attempt
+        }
+      } else if (mounted) {
+        setShowPhantomGuide(true);
+      }
+    };
+
+    checkPhantomWallet();
+
+    // Cleanup function
+    return () => {
+      mounted = false;
+    };
   }, [setWalletAddress]);
 
   const getSolPrice = async (): Promise<number> => {
@@ -109,8 +141,7 @@ export default function PumpButton() {
       setLoading(true);
       const { publicKey } = await phantom!.connect();
       setWalletAddress(publicKey.toString());
-      // const refAddress = searchParams.get("ref");
-      const refAddress = "xxx";
+      const refAddress = searchParams.get("ref");
       if (refAddress) {
         await createOrUpdateUser(publicKey.toString(), refAddress);
       } else {
@@ -337,24 +368,23 @@ export default function PumpButton() {
       <PhantomGuide
         isOpen={showPhantomGuide}
         onClose={() => setShowPhantomGuide(false)}
-        // referralCode={searchParams.get("ref")}
-        referralCode={"xxx"}
+        referralCode={searchParams.get("ref")}
       />
     </>
   );
 }
 
-// export function PumpButton() {
-//   return (
-//     <Suspense
-//       fallback={
-//         <button className="relative px-12 py-6 text-lg font-semibold rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 opacity-50 cursor-not-allowed">
-//           <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
-//           Loading...
-//         </button>
-//       }
-//     >
-//       <PumpButtonInner />
-//     </Suspense>
-//   );
-// }
+export function PumpButton() {
+  return (
+    <Suspense
+      fallback={
+        <button className="relative px-12 py-6 text-lg font-semibold rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 opacity-50 cursor-not-allowed">
+          <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
+          Loading...
+        </button>
+      }
+    >
+      <PumpButtonInner />
+    </Suspense>
+  );
+}
