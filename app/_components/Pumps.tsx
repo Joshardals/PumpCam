@@ -1,9 +1,9 @@
 "use client";
-import { getReferralData } from "@/lib/database/index";
-import { useWalletStore } from "@/lib/store";
-import { Timestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { FiCopy, FiExternalLink } from "react-icons/fi";
+import { doc, onSnapshot, Timestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useWalletStore } from "@/lib/store";
 
 interface PumpData {
   userWallet: string;
@@ -11,24 +11,50 @@ interface PumpData {
   timestamp: Timestamp;
 }
 
+interface UserData {
+  hasPumped: boolean;
+  referrals: Record<string, { totalAmount: number; lastUpdated: Timestamp }>;
+}
+
 export function Pumps() {
   const { walletAddress } = useWalletStore();
   const [showCopied, setShowCopied] = useState(false);
   const [referralData, setReferralData] = useState<PumpData[]>([]);
   const [referralLink, setReferralLink] = useState<string>();
+  const [hasPumped, setHasPumped] = useState(false);
 
   useEffect(() => {
-    if (walletAddress) {
-      loadReferralData();
-      setReferralLink(`${window.location.origin}?ref=${walletAddress}`);
-    }
-  }, [walletAddress]);
-
-  const loadReferralData = async () => {
     if (!walletAddress) return;
-    const data = await getReferralData(walletAddress);
-    setReferralData(data);
-  };
+
+    setReferralLink(`${window.location.origin}?ref=${walletAddress}`);
+
+    // Set up real-time listener for user data
+    const unsubscribe = onSnapshot(
+      doc(db, "users", walletAddress),
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const userData = docSnapshot.data() as UserData;
+          setHasPumped(userData.hasPumped);
+
+          // Transform referrals data
+          const referralsArray = Object.entries(userData.referrals || {}).map(
+            ([userWallet, data]) => ({
+              userWallet,
+              amount: data.totalAmount,
+              timestamp: data.lastUpdated,
+            })
+          );
+          setReferralData(referralsArray);
+        }
+      },
+      (error) => {
+        console.error("Error fetching user data:", error);
+      }
+    );
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [walletAddress]);
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink || "");
@@ -36,7 +62,7 @@ export function Pumps() {
     setTimeout(() => setShowCopied(false), 2000);
   };
 
-  if (!walletAddress) return null;
+  if (!walletAddress || !hasPumped) return null;
 
   return (
     <div className="w-full max-w-3xl space-y-8">
@@ -85,7 +111,6 @@ export function Pumps() {
                 <th className="text-left py-4 px-6 text-zinc-400 font-medium">
                   Address
                 </th>
-                {/* Gains from referred users pumps, since it is 50% that's what you get.*/}
                 <th className="text-right py-4 px-6 text-zinc-400 font-medium">
                   Pumps
                 </th>

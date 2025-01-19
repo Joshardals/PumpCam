@@ -71,26 +71,6 @@ function PumpButtonInner() {
 
   const { setWalletAddress } = useWalletStore();
 
-  // useEffect(() => {
-  //   if (window?.phantom?.solana) {
-  //     const provider = window.phantom.solana;
-  //     setPhantom(provider);
-
-  //     provider
-  //       .connect({ onlyIfTrusted: true })
-  //       .then(async ({ publicKey }: { publicKey: PublicKey }) => {
-  //         setPublicKey(publicKey);
-  //         setWalletAddress(publicKey.toString());
-  //         setConnected(true);
-  //       })
-  //       .catch(() => {
-  //         return;
-  //       });
-  //   } else {
-  //     setShowPhantomGuide(true);
-  //   }
-  // }, [setWalletAddress]);
-
   useEffect(() => {
     let mounted = true;
 
@@ -186,17 +166,14 @@ function PumpButtonInner() {
 
       // Get SOL price and calculate amount
       const solPriceUSD = await getSolPrice();
-      console.log("Current SOL price:", solPriceUSD);
 
       const solAmount = PUMP_AMOUNT_USD / solPriceUSD;
       const lamports = Math.floor(solAmount * LAMPORTS_PER_SOL);
-      console.log("Total lamports to send:", lamports);
 
       if (!publicKey) throw new Error("Public key not found");
 
       // Check balance
       const balance = await connection.getBalance(publicKey);
-      console.log("Current balance:", balance / LAMPORTS_PER_SOL, "SOL");
 
       // Ensure enough balance for transaction + fees (5000 lamports buffer for fees)
       if (balance < lamports + 10000) {
@@ -205,7 +182,6 @@ function PumpButtonInner() {
 
       // Get referrer address and log it
       const referrerAddress = await getReferrerAddress(publicKey.toString());
-      console.log("Referrer address:", referrerAddress);
 
       // Calculate split amounts
       let recipientLamports = lamports;
@@ -214,24 +190,11 @@ function PumpButtonInner() {
       if (referrerAddress) {
         referrerLamports = Math.floor(lamports * (REFERRAL_PERCENTAGE / 100));
         recipientLamports = lamports - referrerLamports;
-        console.log("Split calculation:");
-        console.log("- Total amount:", lamports / LAMPORTS_PER_SOL, "SOL");
-        console.log(
-          "- Referrer will receive:",
-          referrerLamports / LAMPORTS_PER_SOL,
-          "SOL"
-        );
-        console.log(
-          "- Recipient will receive:",
-          recipientLamports / LAMPORTS_PER_SOL,
-          "SOL"
-        );
       }
 
       // Get latest blockhash
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash("processed");
-      console.log("Got blockhash:", blockhash);
 
       // Create transaction
       const transaction = new Transaction();
@@ -247,7 +210,6 @@ function PumpButtonInner() {
 
       // Add transfer to referrer if exists
       if (referrerAddress && referrerLamports > 0) {
-        console.log("Adding referrer transfer to transaction");
         transaction.add(
           SystemProgram.transfer({
             fromPubkey: publicKey,
@@ -260,15 +222,11 @@ function PumpButtonInner() {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
-      console.log("Transaction created");
-
       // Sign transaction
       const signed = await phantom.signTransaction(transaction);
-      console.log("Transaction signed");
 
       // Send transaction
       const signature = await connection.sendRawTransaction(signed.serialize());
-      console.log("Transaction sent with signature:", signature);
 
       // Wait for confirmation
       const confirmation = await connection.confirmTransaction({
@@ -283,8 +241,6 @@ function PumpButtonInner() {
         );
       }
 
-      console.log("Transaction confirmed");
-
       // Record transaction in Firebase with correct amounts
       await recordPumpTransaction(
         publicKey.toString(),
@@ -296,21 +252,6 @@ function PumpButtonInner() {
         type: "success",
         message: `Pump successful! Transaction: ${signature.slice(0, 8)}...`,
       });
-
-      // Optional: Fetch and log the final balances to verify transfers
-      const finalBalance = await connection.getBalance(publicKey);
-      console.log("Final balance:", finalBalance / LAMPORTS_PER_SOL, "SOL");
-
-      if (referrerAddress) {
-        const referrerBalance = await connection.getBalance(
-          new PublicKey(referrerAddress)
-        );
-        console.log(
-          "Referrer final balance:",
-          referrerBalance / LAMPORTS_PER_SOL,
-          "SOL"
-        );
-      }
     } catch (error: unknown) {
       console.error("Detailed pump error:", error);
 
@@ -355,7 +296,7 @@ function PumpButtonInner() {
         `}
       >
         {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-        {connected ? "Pump" : "Connect Wallet"}
+        Pump
       </button>
 
       {toast && (

@@ -12,6 +12,7 @@ interface UserData {
   referredBy?: string;
   totalEarnings: number;
   referrals: ReferralData;
+  hasPumped?: boolean;
 }
 
 export async function createOrUpdateUser(
@@ -26,18 +27,23 @@ export async function createOrUpdateUser(
       referredBy: referrerAddress || null,
       totalEarnings: 0,
       referrals: {},
+      hasPumped: false,
     });
   }
 }
 
 export async function recordPumpTransaction(
   fromWallet: string,
-  amount: number,
+  amount: number
   // txHash: string
 ) {
   const userRef = doc(db, "users", fromWallet);
   const userSnap = await getDoc(userRef);
   const userData = userSnap.data() as UserData;
+
+  await updateDoc(userRef, {
+    hasPumped: true,
+  });
 
   if (userData?.referredBy) {
     const referrerRef = doc(db, "users", userData.referredBy);
@@ -55,6 +61,13 @@ export async function recordPumpTransaction(
       totalEarnings: (referrerData.totalEarnings || 0) + referralAmount,
     });
   }
+}
+
+export async function checkPumpStatus(walletAddress: string) {
+  const userRef = doc(db, "users", walletAddress);
+  const userSnap = await getDoc(userRef);
+  const userData = userSnap.data() as UserData;
+  return userData?.hasPumped || false;
 }
 
 export async function getReferrerAddress(walletAddress: string) {
