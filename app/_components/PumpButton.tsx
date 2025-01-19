@@ -109,6 +109,7 @@ function PumpButtonInner() {
           }
         } catch (error) {
           // Handle silently as this is just an auto-connect attempt
+          console.error(error);
         }
       } else if (mounted) {
         setShowPhantomGuide(true);
