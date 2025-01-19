@@ -62,7 +62,7 @@ interface SolanaPrice {
 
 function PumpButtonInner() {
   const [showPhantomGuide, setShowPhantomGuide] = useState<boolean>(false);
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const [phantom, setPhantom] = useState<PhantomProvider | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
@@ -109,7 +109,8 @@ function PumpButtonInner() {
       setLoading(true);
       const { publicKey } = await phantom!.connect();
       setWalletAddress(publicKey.toString());
-      const refAddress = searchParams.get("ref");
+      // const refAddress = searchParams.get("ref");
+      const refAddress = "xxx";
       if (refAddress) {
         await createOrUpdateUser(publicKey.toString(), refAddress);
       } else {
@@ -336,7 +337,8 @@ function PumpButtonInner() {
       <PhantomGuide
         isOpen={showPhantomGuide}
         onClose={() => setShowPhantomGuide(false)}
-        referralCode={searchParams.get("ref")}
+        // referralCode={searchParams.get("ref")}
+        referralCode={"xxx"}
       />
     </>
   );
