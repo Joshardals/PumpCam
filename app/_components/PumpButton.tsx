@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   Connection,
   PublicKey,
@@ -60,7 +60,7 @@ interface SolanaPrice {
   };
 }
 
-export default function PumpButton() {
+function PumpButtonInner() {
   const [showPhantomGuide, setShowPhantomGuide] = useState<boolean>(false);
   const searchParams = useSearchParams();
   const [phantom, setPhantom] = useState<PhantomProvider | null>(null);
@@ -339,5 +339,20 @@ export default function PumpButton() {
         referralCode={searchParams.get("ref")}
       />
     </>
+  );
+}
+
+export function PumpButton() {
+  return (
+    <Suspense
+      fallback={
+        <button className="relative px-12 py-6 text-lg font-semibold rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 opacity-50 cursor-not-allowed">
+          <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
+          Loading...
+        </button>
+      }
+    >
+      <PumpButtonInner />
+    </Suspense>
   );
 }
