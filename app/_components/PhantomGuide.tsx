@@ -30,15 +30,40 @@ export function PhantomGuide({
       "https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa",
   };
 
-  const handlePhantomClick = () => {
-    const baseUrl = "https://phantom.app/ul/browse";
-    const currentUrl = window.location.href;
-    const referralParam = referralCode ? `?ref=${referralCode}` : "";
-    const encodedUrl = encodeURIComponent(`${currentUrl}${referralParam}`);
-    const phantomUrl = `${baseUrl}/${encodedUrl}`;
+  // const handlePhantomClick = () => {
+  //   const baseUrl = "https://phantom.app/ul/browse";
+  //   const currentUrl = window.location.href;
+  //   const referralParam = referralCode ? `?ref=${referralCode}` : "";
+  //   const encodedUrl = encodeURIComponent(`${currentUrl}${referralParam}`);
+  //   const phantomUrl = `${baseUrl}/${encodedUrl}`;
 
+  //   if (isMobile) {
+  //     window.location.href = phantomUrl;
+  //     setTimeout(() => {
+  //       const storeLink = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+  //         ? phantomStoreLinks.ios
+  //         : phantomStoreLinks.android;
+  //       window.location.href = storeLink;
+  //     }, 1000);
+  //   } else {
+  //     window.open(phantomStoreLinks.chrome, "_blank");
+  //   }
+  // };
+
+  const handlePhantomClick = () => {
     if (isMobile) {
+      // Using Phantom's deep linking format for mobile
+      const currentUrl = window.location.href;
+      const referralParam = referralCode ? `?ref=${referralCode}` : "";
+      const fullUrl = `${currentUrl}${referralParam}`;
+
+      // Phantom deep link format
+      const phantomUrl = `phantom://browse/${encodeURIComponent(fullUrl)}`;
+
+      // Try opening Phantom first
       window.location.href = phantomUrl;
+
+      // Fallback to store after a delay if Phantom isn't installed
       setTimeout(() => {
         const storeLink = /iPhone|iPad|iPod/i.test(navigator.userAgent)
           ? phantomStoreLinks.ios

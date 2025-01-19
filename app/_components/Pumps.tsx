@@ -68,7 +68,7 @@ export function Pumps() {
     <div className="w-full max-w-3xl space-y-8">
       <div className="space-y-6">
         <h2 className="text-xl font-semibold text-emerald-400">
-          Your Referral Link
+          Your Pump Link
         </h2>
         <div className="relative flex items-center">
           <div className="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 pr-24 font-mono text-sm overflow-hidden overflow-ellipsis whitespace-nowrap">
