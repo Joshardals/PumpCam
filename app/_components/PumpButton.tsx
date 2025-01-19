@@ -60,7 +60,7 @@ interface SolanaPrice {
   };
 }
 
-export function PumpButton() {
+export default function PumpButton() {
   const [showPhantomGuide, setShowPhantomGuide] = useState<boolean>(false);
   // const searchParams = useSearchParams();
   const [phantom, setPhantom] = useState<PhantomProvider | null>(null);

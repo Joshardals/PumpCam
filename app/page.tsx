@@ -1,4 +1,4 @@
-import { PumpButton } from "./_components/PumpButton";
+import PumpButton from "./_components/PumpButton";
 import { Pumps } from "./_components/Pumps";
 import { Header } from "./_components/shared/Header";
 import Decorations from "./_components/ui/Decorations";
