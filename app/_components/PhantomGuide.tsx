@@ -87,7 +87,7 @@ export function PhantomGuide({
               </h2>
 
               <p className="text-zinc-400 text-center mb-8">
-                To participate in pumps and earn rewards, you'll need to install
+                To participate in pumps and earn rewards, you&apos;ll need to install
                 the Phantom wallet first.
               </p>
 

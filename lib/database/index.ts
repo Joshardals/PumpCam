@@ -33,7 +33,7 @@ export async function createOrUpdateUser(
 export async function recordPumpTransaction(
   fromWallet: string,
   amount: number,
-  txHash: string
+  // txHash: string
 ) {
   const userRef = doc(db, "users", fromWallet);
   const userSnap = await getDoc(userRef);

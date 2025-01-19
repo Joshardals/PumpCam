@@ -100,6 +100,7 @@ export default function PumpButton() {
       return data.solana.usd;
     } catch (error) {
       throw new Error("Failed to fetch SOL price");
+      console.error(error);
     }
   };
 
@@ -125,6 +126,7 @@ export default function PumpButton() {
         type: "error",
         message: "Failed to connect wallet. Please try again.",
       });
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -253,8 +255,8 @@ export default function PumpButton() {
       // Record transaction in Firebase with correct amounts
       await recordPumpTransaction(
         publicKey.toString(),
-        solAmount, // This is the total amount
-        signature
+        solAmount // This is the total amount
+        // signature
       );
 
       setToast({
