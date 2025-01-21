@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FiCopy, FiExternalLink } from "react-icons/fi";
+import { FiCopy } from "react-icons/fi";
 import { doc, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useWalletStore } from "@/lib/store";
