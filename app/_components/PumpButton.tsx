@@ -112,6 +112,7 @@ function PumpButtonInner() {
       const data: SolanaPrice = await response.json();
       return data.solana.usd;
     } catch (error) {
+      console.error(error);
       throw new Error("Failed to fetch SOL price");
     }
   };
