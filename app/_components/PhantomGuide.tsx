@@ -90,12 +90,11 @@ export function PhantomGuide({
               </div>
 
               <h2 className="text-2xl font-bold text-center mb-4 bg-gradient-to-r from-emerald-400 to-teal-400 text-transparent bg-clip-text">
-                Get Started with Phantom
+                Open Dapp in Phantom
               </h2>
 
               <p className="text-zinc-400 text-center mb-8">
-                To participate in pumps and earn rewards, you&apos;ll need to
-                install the Phantom wallet first.
+                Open Dapp in phantom to join pumps
               </p>
 
               <div className="space-y-4">
@@ -105,7 +104,7 @@ export function PhantomGuide({
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02]"
                 >
                   <Download className="w-5 h-5" />
-                  Install Phantom Wallet
+                  Open in Phantom Wallet
                 </button>
 
                 <a
@@ -120,8 +119,7 @@ export function PhantomGuide({
               </div>
 
               <p className="text-xs text-zinc-500 text-center mt-6">
-                Phantom is a secure crypto wallet built for Solana and other
-                blockchains
+                PumpCam ™
               </p>
             </div>
           </motion.div>

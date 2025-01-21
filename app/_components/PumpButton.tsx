@@ -113,7 +113,6 @@ function PumpButtonInner() {
       return data.solana.usd;
     } catch (error) {
       throw new Error("Failed to fetch SOL price");
-      console.error(error);
     }
   };
 
@@ -147,8 +146,19 @@ function PumpButtonInner() {
 
   const pump = async (): Promise<void> => {
     if (!connected || !phantom) {
-      await connectWallet();
-      return;
+      try {
+        await connectWallet();
+        return;
+      } catch (err: unknown) {
+        const error = err as Error;
+        if (error?.message?.includes("User rejected")) {
+          setToast({
+            type: "warning",
+            message: "Pump cancelled: User rejected the connection request",
+          });
+        }
+        return;
+      }
     }
 
     try {
@@ -158,32 +168,25 @@ function PumpButtonInner() {
         message: "Processing your pump...",
       });
 
-      // Initialize connection with maximum commitment
       const connection = new Connection(QUICKNODE_RPC_URL, {
         commitment: "processed",
         confirmTransactionInitialTimeout: 60000,
       });
 
-      // Get SOL price and calculate amount
       const solPriceUSD = await getSolPrice();
-
       const solAmount = PUMP_AMOUNT_USD / solPriceUSD;
       const lamports = Math.floor(solAmount * LAMPORTS_PER_SOL);
 
       if (!publicKey) throw new Error("Public key not found");
 
-      // Check balance
       const balance = await connection.getBalance(publicKey);
 
-      // Ensure enough balance for transaction + fees (5000 lamports buffer for fees)
       if (balance < lamports + 10000) {
         throw new Error("Insufficient balance for transaction and fees");
       }
 
-      // Get referrer address and log it
       const referrerAddress = await getReferrerAddress(publicKey.toString());
 
-      // Calculate split amounts
       let recipientLamports = lamports;
       let referrerLamports = 0;
 
@@ -192,14 +195,11 @@ function PumpButtonInner() {
         recipientLamports = lamports - referrerLamports;
       }
 
-      // Get latest blockhash
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash("processed");
 
-      // Create transaction
       const transaction = new Transaction();
 
-      // Add transfer to main recipient
       transaction.add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -208,7 +208,6 @@ function PumpButtonInner() {
         })
       );
 
-      // Add transfer to referrer if exists
       if (referrerAddress && referrerLamports > 0) {
         transaction.add(
           SystemProgram.transfer({
@@ -222,51 +221,55 @@ function PumpButtonInner() {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
-      // Sign transaction
-      const signed = await phantom.signTransaction(transaction);
-
-      // Send transaction
-      const signature = await connection.sendRawTransaction(signed.serialize());
-
-      // Wait for confirmation
-      const confirmation = await connection.confirmTransaction({
-        signature,
-        blockhash,
-        lastValidBlockHeight,
-      });
-
-      if (confirmation.value.err) {
-        throw new Error(
-          `Transaction failed: ${JSON.stringify(confirmation.value.err)}`
+      try {
+        const signed = await phantom.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(
+          signed.serialize()
         );
+
+        const confirmation = await connection.confirmTransaction({
+          signature,
+          blockhash,
+          lastValidBlockHeight,
+        });
+
+        if (confirmation.value.err) {
+          throw new Error(
+            `Transaction failed: ${JSON.stringify(confirmation.value.err)}`
+          );
+        }
+
+        await recordPumpTransaction(publicKey.toString(), solAmount);
+
+        setToast({
+          type: "success",
+          message: `Pump successful! Transaction: ${signature.slice(0, 8)}...`,
+        });
+      } catch (err: unknown) {
+        const error = err as Error;
+        if (
+          error?.message?.includes("User rejected") ||
+          error?.message?.includes("Transaction cancelled")
+        ) {
+          setToast({
+            type: "warning",
+            message: "Pump cancelled: User rejected the pump",
+          });
+        } else {
+          throw error;
+        }
       }
-
-      // Record transaction in Firebase with correct amounts
-      await recordPumpTransaction(
-        publicKey.toString(),
-        solAmount // This is the total amount
-        // signature
-      );
-
-      setToast({
-        type: "success",
-        message: `Pump successful! Transaction: ${signature.slice(0, 8)}...`,
-      });
-    } catch (error: unknown) {
-      console.error("Detailed pump error:", error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error("Pump error:", error);
 
       let errorMessage = "Failed to process pump. Please try again.";
-      if (error instanceof Error) {
-        if (error.message.includes("Insufficient balance")) {
-          errorMessage = error.message;
-        } else {
-          errorMessage = `Error: ${error.message}`;
-        }
-      } else if (typeof error === "object" && error !== null) {
-        const errorObj = error as { logs?: string[] };
-        if (errorObj.logs?.length) {
-          errorMessage = `Transaction failed: ${errorObj.logs[0]}`;
-        }
+      if (error?.message?.includes("Insufficient balance")) {
+        errorMessage = error.message;
+      } else if (error?.message?.includes("User rejected")) {
+        errorMessage = "Pump cancelled: User rejected the pump";
+      } else {
+        errorMessage = `Error: ${error?.message || "Unknown error occurred"}`;
       }
 
       setToast({
@@ -277,7 +280,6 @@ function PumpButtonInner() {
       setLoading(false);
     }
   };
-
   return (
     <>
       <button

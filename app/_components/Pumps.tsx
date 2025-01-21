@@ -67,9 +67,7 @@ export function Pumps() {
   return (
     <div className="w-full max-w-3xl space-y-8">
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-emerald-400">
-          Your Pump Link
-        </h2>
+        <h2 className="text-xl font-semibold text-emerald-400">Pump Link</h2>
         <div className="relative flex items-center">
           <div className="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 pr-24 font-mono text-sm overflow-hidden overflow-ellipsis whitespace-nowrap">
             {referralLink}
@@ -102,7 +100,7 @@ export function Pumps() {
 
       <div>
         <h2 className="text-xl font-semibold text-emerald-400 mb-6">
-          Referral Earnings
+          Latest Pumps
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
