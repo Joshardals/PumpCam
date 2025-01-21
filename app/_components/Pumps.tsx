@@ -86,14 +86,6 @@ export function Pumps() {
                 Copied!
               </span>
             </button>
-            <a
-              href={referralLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 hover:bg-zinc-800 rounded-md transition-colors"
-            >
-              <FiExternalLink className="w-5 h-5 text-emerald-400" />
-            </a>
           </div>
         </div>
       </div>
