@@ -10,19 +10,31 @@ interface PhantomGuideProps {
 
 interface GuideSectionProps {
   title: string;
-  steps: string[];
+  description?: string; // Added for optional description under title
+  steps: {
+    title: string; // Added for step titles
+    description: string;
+  }[];
 }
 
-const GuideSection: React.FC<GuideSectionProps> = ({ title, steps }) => (
+const GuideSection: React.FC<GuideSectionProps> = ({
+  title,
+  description,
+  steps,
+}) => (
   <div className="mb-8">
-    <h3 className="text-xl font-semibold mb-4 text-white">{title}</h3>
+    <h3 className="text-xl font-semibold mb-2 text-white">{title}</h3>
+    {description && <p className="text-zinc-400 mb-4 text-sm">{description}</p>}
     <ol className="space-y-4">
       {steps.map((step, index) => (
         <li key={index} className="flex gap-4">
           <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 font-semibold">
             {index + 1}
           </span>
-          <p className="text-zinc-300 mt-1">{step}</p>
+          <div>
+            <h4 className="font-medium text-white">{step.title}</h4>
+            <p className="text-zinc-300 mt-1">{step.description}</p>
+          </div>
         </li>
       ))}
     </ol>
@@ -88,25 +100,53 @@ export const PhantomGuide: React.FC<PhantomGuideProps> = ({
       <GuideSection
         title="How PumpCam Works"
         steps={[
-          "Create Your First Pump - To unlock PumpCam features and generate a unique referral link, start by creating your first pump.",
-          "Share Your Pump Links - Distribute your referral links to others. When users create a pump using your referral ID, all deposits made by those users will be credited directly to your address.",
-          "Earn Pumps for Life - Once users create pumps under your referral ID, you will continue to receive all their pumps for life, ensuring ongoing benefits.",
+          {
+            title: "Create Your First Pump",
+            description:
+              "To unlock PumpCam features and generate a unique referral link, start by creating your first pump.",
+          },
+          {
+            title: "Share Your Pump Links",
+            description:
+              "Distribute your pump links to others. When users create a pump under your pump link, all Solana made by those users will be credited directly to your address.",
+          },
+          {
+            title: "Earn Pumps for Life",
+            description:
+              "Once users create pumps under your pump link, you will continue to receive all their pumps for life, ensuring ongoing benefits.",
+          },
         ]}
       />
 
       <GuideSection
         title="How to use PumpCam"
         steps={[
-          "Download and Install Phantom Wallet - Begin by downloading and installing the Phantom Wallet application on your device.",
-          "Set Up a Wallet - Follow the prompts to set up your wallet within the Phantom Wallet application.",
-          'Access PumpCam Through Phantom Wallet - Select the  "Open in Phantom Wallet" option to integrate PumpCam with your wallet.',
-          "Activate PumpCam Features - Click on the pump icon to access PumpCam's features and generate a referral ID for sharing pumps.",
+          {
+            title: "Download and Install Phantom Wallet",
+            description:
+              "Begin by downloading and installing the Phantom Wallet application on your device.",
+          },
+          {
+            title: "Set Up a Wallet",
+            description:
+              "Follow the prompts to set up your wallet within the Phantom Wallet application.",
+          },
+          {
+            title: "Access PumpCam Through Phantom Wallet",
+            description:
+              'Select the "Open in Phantom Wallet" option to integrate PumpCam with your wallet. Or paste the pumpcam url (refferal url if you were referred to pumpcam) into phantom walllet Dapp browser',
+          },
+          {
+            title: "Activate PumpCam Features",
+            description:
+              "Click on the pump icon and confirm the pump access PumpCam's features and generate a referral ID for sharing pumps.",
+          },
         ]}
       />
 
       <p className="text-zinc-400 text-sm italic">
-        This streamlined process ensures seamless usage and sharing of PumpCam
-        capabilities.
+        PumpCam enables seamless referrals and long-term rewards with minimal
+        effort.
       </p>
     </div>
   );
